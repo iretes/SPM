@@ -1,1 +1,1 @@
-# SPM
+# Parallel and distributed systems: paradigms and models (SPM)
