@@ -29,7 +29,7 @@ echo "Executing sequential version"
 for i in $(seq 1 $REPETITIONS); do
     echo "[$ri/$REPETITIONS] -s -l wavefront_seq_log.csv"
     ./wavefront -s -l wavefront_seq_log.csv
-done;
+done
 
 # empty the log file
 truncate -s 0 $LOGFILE
@@ -41,8 +41,8 @@ for t in $(seq 0 $THREADS_STEP $NUM_CORES); do
     for rep in $(seq 1 $REPETITIONS); do
         echo "[$rep/$REPETITIONS] T = $thr, N = $DEFAULT_N, min = $DEFAULT_MIN, max = $DEFAULT_MAX"
         ./wavefront -N $DEFAULT_N -T $thr -m $DEFAULT_MIN -M $DEFAULT_MAX -l $LOGFILE
-    done;
-done;
+    done
+done
 
 ######################## TESTING WEAK SCALABILITY ##############################
 echo "Testing weak scalability"
@@ -52,8 +52,8 @@ for t in $(seq 4 $THREADS_STEP $NUM_CORES); do
     for rep in $(seq 1 $REPETITIONS); do
         echo "[$rep/$REPETITIONS] T = $t, N = $DEFAULT_N, min = $min, max = $max"
         ./wavefront -N $DEFAULT_N -T $t -m $min -M $max -l $LOGFILE
-    done;
-done;
+    done
+done
 
 ######################## TESTING WITH UNBALANCED WORKLOADS #####################
 echo "Testing with unbalanced workloads"
@@ -61,8 +61,8 @@ for max in 100 2000; do
     for rep in $(seq 1 $REPETITIONS); do
         echo "[$rep/$REPETITIONS] T = $NUM_CORES, N = $DEFAULT_N, min = 0, max = $max"
         ./wavefront -N $DEFAULT_N -T $NUM_CORES -m 0 -M $max -l $LOGFILE
-    done;
-done;
+    done
+done
 
 ######################## TESTING WITH BALANCED WORKLOADS #######################
 echo "Testing with balanced workloads"
@@ -70,5 +70,5 @@ for m in 0 500; do
     for rep in $(seq 1 $REPETITIONS); do
         echo "[$rep/$REPETITIONS] T = $NUM_CORES, N = $DEFAULT_N, min = $m, max = $m"
         ./wavefront -N $DEFAULT_N -T $NUM_CORES -m $m -M $m -l $LOGFILE
-    done;
-done;
+    done
+done

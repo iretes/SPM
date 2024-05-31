@@ -17,21 +17,22 @@
 #define DEFAULT_m 0 // default minimum time (in microseconds)
 #define DEFAULT_M 1000 // default maximum time (in microseconds)
 
-#define DEBUG_PRINT(start, fmt, ...)                                           \
-	if (DEBUG) {{                                                              \
-		std::chrono::time_point<std::chrono::system_clock> now;                \
-		now = std::chrono::system_clock::now();                                \
-		std::chrono::duration<double> delta = now-start;                       \
-		std::printf("(elapsed time = %fs) " fmt, delta.count(), ##__VA_ARGS__);\
+#define DEBUG_PRINT(fmt, ...)\
+	if (DEBUG) {{\
+		std::printf("(current time = %fs) " fmt,\
+			std::chrono::duration<double>(\
+				std::chrono::system_clock::now().time_since_epoch()\
+			).count(),\
+			##__VA_ARGS__);\
 	}}
 
-#define TIMERSTART(label)                                                      \
-	std::chrono::time_point<std::chrono::system_clock> a##label, b##label;     \
+#define TIMERSTART(label)\
+	std::chrono::time_point<std::chrono::system_clock> a##label, b##label;\
 	a##label = std::chrono::system_clock::now();
 
-#define TIMERSTOP(label, time_elapsed)                                         \
-	b##label = std::chrono::system_clock::now();                               \
-	std::chrono::duration<double> delta##label = b##label-a##label;            \
+#define TIMERSTOP(label, time_elapsed)\
+	b##label = std::chrono::system_clock::now();\
+	std::chrono::duration<double> delta##label = b##label-a##label;\
 	time_elapsed = delta##label.count();
 
 int random(const int &min, const int &max) {
@@ -53,23 +54,21 @@ void wavefront_parallel_static(
 	) {
 
 		std::barrier bar(T);
-		std::chrono::time_point<std::chrono::system_clock> start = 
-			std::chrono::system_clock::now();
 
 		auto static_task = [&] (const uint64_t id) -> void {
 			for (uint64_t k=0; k<N; ++k) { // for each upper diagonal
 				if (id >= N-k) {
 					bar.arrive_and_drop();
-					DEBUG_PRINT(start, "Thread %lu: exit\n", id)
+					DEBUG_PRINT("Thread %lu: exit\n", id)
 					return;
 				}
 				for (uint64_t i=id; i<N-k; i+=T) { // for each assigned elem.
 					work(std::chrono::microseconds(M[i*N+(i+k)]));
-					DEBUG_PRINT(start,"Thread %lu: computed index %lu\n",
+					DEBUG_PRINT("Thread %lu: computed index %lu\n",
 						id, i*N+(i+k))
 				}
 				bar.arrive_and_wait();
-				DEBUG_PRINT(start,"Thread %lu: unlocked from waiting\n", id)
+				DEBUG_PRINT("Thread %lu: unlocked from waiting\n", id)
 			}
 		};
 
@@ -89,23 +88,21 @@ void wavefront_parallel_dynamic(
 	) {
 
 	std::barrier bar(T);
-	std::chrono::time_point<std::chrono::system_clock> start;
-	if (DEBUG) start = std::chrono::system_clock::now();
 
 	auto process_element = [&](uint64_t index, bool block) {
 		work(std::chrono::microseconds(M[index]));
 		if (block) {
 			bar.arrive_and_wait();
-			DEBUG_PRINT(start, "Computed index %lu and waited\n", index)
+			DEBUG_PRINT("Computed index %lu and waited\n", index)
 		}
 		else {
-			DEBUG_PRINT(start, "Computed index %lu without waiting\n", index)
+			DEBUG_PRINT("Computed index %lu without waiting\n", index)
 		}
 	};
 
 	auto wait = [&] () {
 		bar.arrive_and_wait();
-		DEBUG_PRINT(start, "Waited\n")
+		DEBUG_PRINT("Waited\n")
 	};
 
 	ThreadPool TP(T);
