@@ -1,0 +1,8 @@
+Unique words 503387
+Total words  39594790
+Top 5 words:
+the	1977889
+and	1193036
+of	1174716
+to	848941
+a	641085
